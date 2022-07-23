@@ -28,31 +28,51 @@ app.get('/api/notes', (req, res) => {
 
 //POST /api/notes should receive a new note to save on the request body, add it to the db.json file, and then return the new note to the client.
 app.post('/api/notes', (req, res) => {
-    // Log that a POST request was received
+    //Log that a POST request was received
     console.info(`${req.method} request received to add a note`);
 
-    // Destructuring assignment for the items in req.body
-    const {title, text} = req.body;
-    
-    // If all the required properties are present
-    if(title && text){
-    // Variable for the object we will save
-    const newNote = {
-        title,
-        text,
-    };
+    //Destructuring assignment for the items in req.body
+    const { title, text } = req.body;
 
-    //Obtain existing notes 
-    fs.readFile(db, 'utf8', (err, data) => {
-        if (err) {
-            console.error(err);
-          } else {
-            // Convert string into JSON object
-            const parsedNotes = JSON.parse(data);
-    
-    })
+    //If all the required properties are present
+    if (title && text) {
+        //Variable for the object we will save
+        const newNote = {
+            title,
+            text,
+        };
+
+        //Obtain existing notes 
+        fs.readFile(db, 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+            } else {
+                //Convert string into JSON object
+                const parsedNotes = JSON.parse(data);
+
+                //Add a new note
+                parsedNotes.push(newNote);
+
+                //Write updated reviews back to the file
+                fs.writeFile(db, JSON.stringify(parsedNotes, null, 4),
+                    (writeErr) =>
+                        writeErr
+                            ? console.error(writeErr)
+                            : console.info('Successfully updated notes')
+                );
+            }
+        });
+        const response = {
+            status: 'success',
+            body: newNote,
+        };
+
+        console.log(response);
+        res.status(201).json(response);
+    } else {
+        res.status(500).json('Error in posting note');
     }
-})
+});
 
 //Listen for connections
 app.listen(PORT, () => {
