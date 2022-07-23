@@ -1,10 +1,12 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const util = require('util');
+var uniqid = require('uniqid');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const db = require('./db/db.json')
+const dbFile = require('./db/db.json')
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -16,10 +18,20 @@ app.get('/', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/index.html'))
 );
 
+//GET /notes route should return the notes.html file
+app.get('/notes', (req, res) => 
+    res.sendFile(path.join(__dirname, '/public/notes.html'))
+);
+
+// Promise version of fs.readFile
+const readFromFile = util.promisify(fs.readFile);
+
 //GET /api/notes should read the db.json file and return all saved notes as JSON.
 app.get('/api/notes', (req, res) => {
-    res.json(db);
-
+    res.json(dbFile);
+    //readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)));
+    
+    
     // Send a message to the client
     res.status(200).json(`${req.method} request received to get notes`);
     // Log our request to the terminal
@@ -35,15 +47,16 @@ app.post('/api/notes', (req, res) => {
     const { title, text } = req.body;
 
     //If all the required properties are present
-    if (title && text) {
+    if (req.body) {
         //Variable for the object we will save
         const newNote = {
             title,
             text,
+            noteId: uniqid(),
         };
 
         //Obtain existing notes 
-        fs.readFile(db, 'utf8', (err, data) => {
+        fs.readFile('./db/db.json', 'utf8', (err, data) => {
             if (err) {
                 console.error(err);
             } else {
@@ -53,15 +66,15 @@ app.post('/api/notes', (req, res) => {
                 //Add a new note
                 parsedNotes.push(newNote);
 
-                //Write updated reviews back to the file
-                fs.writeFile(db, JSON.stringify(parsedNotes, null, 4),
+                //Write updated notes back to the file
+                fs.writeFile('./db/db.json', JSON.stringify(parsedNotes, null, 4),
                     (writeErr) =>
                         writeErr
                             ? console.error(writeErr)
                             : console.info('Successfully updated notes')
                 );
             }
-        });
+        }); 
         const response = {
             status: 'success',
             body: newNote,
@@ -70,7 +83,7 @@ app.post('/api/notes', (req, res) => {
         console.log(response);
         res.status(201).json(response);
     } else {
-        res.status(500).json('Error in posting note');
+        res.status(500).json('Errorrrr in posting note');
     }
 });
 

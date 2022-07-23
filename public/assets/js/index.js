@@ -31,16 +31,28 @@ const getNotes = () =>
     headers: {
       'Content-Type': 'application/json',
     },
+    // body: JSON.stringify(data),
+  // })
+  // .then((response) => response.json())
+  // .then((data) => data)
+  // .catch((error) => {
+  //   console.error('Error:', error);
   });
 
-const saveNote = (note) =>
+const saveNote = (note) => 
   fetch('/api/notes', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(note),
+  // })
+  // .then((response) => response.json())
+  
+  // .catch((error) => {
+  //   console.error('Error:', error);
   });
+
 
 const deleteNote = (id) =>
   fetch(`/api/notes/${id}`, {
@@ -64,6 +76,7 @@ const renderActiveNote = () => {
     noteTitle.value = '';
     noteText.value = '';
   }
+  
 };
 
 const handleNoteSave = () => {
@@ -72,9 +85,10 @@ const handleNoteSave = () => {
     text: noteText.value,
   };
   saveNote(newNote).then(() => {
+    
     getAndRenderNotes();
     renderActiveNote();
-  });
+  });  
 };
 
 // Delete the clicked note
@@ -168,6 +182,11 @@ const renderNoteList = async (notes) => {
   if (window.location.pathname === '/notes') {
     noteListItems.forEach((note) => noteList[0].append(note));
   }
+  function LoadOnce() 
+{ 
+window.location.reload(); 
+} 
+LoadOnce;
 };
 
 // Gets notes from the db and renders them to the sidebar
@@ -181,3 +200,4 @@ if (window.location.pathname === '/notes') {
 }
 
 getAndRenderNotes();
+
