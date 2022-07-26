@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
+var fs = require('fs');
 const util = require('util');
 var uniqid = require('uniqid');
 
@@ -19,7 +19,7 @@ app.get('/', (req, res) =>
 );
 
 //GET /notes route should return the notes.html file
-app.get('/notes', (req, res) => 
+app.get('/notes', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
@@ -28,13 +28,13 @@ const readFromFile = util.promisify(fs.readFile);
 
 //GET /api/notes should read the db.json file and return all saved notes as JSON.
 app.get('/api/notes', (req, res) => {
-    res.json(dbFile);
-    //readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)));
-    
-    
-    // Send a message to the client
-    res.status(200).json(`${req.method} request received to get notes`);
-    // Log our request to the terminal
+    // res.json(dbFile);
+    readFromFile('./db/db.json')
+    .then((data) => res.json(JSON.parse(data)))
+    .catch((error) => {
+        console.error('Error:', error);
+      });
+
     console.info(`${req.method} request received to get notes`);
 });
 
@@ -52,7 +52,7 @@ app.post('/api/notes', (req, res) => {
         const newNote = {
             title,
             text,
-            noteId: uniqid(),
+            id: uniqid(),
         };
 
         //Obtain existing notes 
@@ -74,7 +74,7 @@ app.post('/api/notes', (req, res) => {
                             : console.info('Successfully updated notes')
                 );
             }
-        }); 
+        });
         const response = {
             status: 'success',
             body: newNote,
